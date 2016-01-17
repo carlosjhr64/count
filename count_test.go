@@ -15,7 +15,7 @@ func TestCount(test *testing.T) {
   var n int
   fmt.Println("Should not take more than a couple seconds.")
 
-  threads := New(3)
+  threads := New(4)
 
   n = threads.Plus()
   if n != 2 { bad("Should have 2 threads.") }
