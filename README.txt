@@ -10,7 +10,7 @@ Example:
     func main() {
       //...
       for {
-        //...many time...
+        //...many times...
         threads.Plus()
         go run_stuff()
       }
@@ -20,7 +20,7 @@ Example:
     //...
     func run_stuff(){
       //...
-      theads.Minus()
+      threads.Minus()
     }
 
 const VERSION string = "0.1.0"
