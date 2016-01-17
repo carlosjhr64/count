@@ -1,6 +1,6 @@
 package count // import "github.com/carlosjhr64/count"
 
-sync/atomic counting, and wating for count to return to one.
+sync/atomic counting, and waiting for count to return to one.
 
 const VERSION string = "0.0.0"
 

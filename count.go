@@ -1,4 +1,4 @@
-// sync/atomic counting, and wating for count to return to one.
+// sync/atomic counting, and waiting for count to return to one.
 package count
 
 import "sync/atomic"
