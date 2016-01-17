@@ -23,7 +23,7 @@ Example:
       threads.Minus()
     }
 
-const VERSION string = "0.1.0"
+const VERSION string = "1.0.0"
 
 func New(n int) *Threads
 type Threads struct { ... }
