@@ -1,5 +1,5 @@
 /*
-  sync/atomic counting,
+  sync/mutex counting,
   blocking on max count, and
   waiting for count to return to one.
 
@@ -9,7 +9,7 @@
     func main() {
       //...
       for {
-        //...many time...
+        //...many times...
         threads.Plus()
         go run_stuff()
       }

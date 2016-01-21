@@ -1,6 +1,6 @@
 package count // import "github.com/carlosjhr64/count"
 
-sync/atomic counting, blocking on max count, and waiting for count to return
+sync/mutex counting, blocking on max count, and waiting for count to return
 to one.
 
 Example:
@@ -20,10 +20,19 @@ Example:
     //...
     func run_stuff(){
       //...
-      threads.Minus()
+      theads.Minus()
     }
 
-const VERSION string = "1.0.0"
+const VERSION string = "2.0.0"
 
 func New(n int) *Threads
-type Threads struct { ... }
+
+type Threads struct {
+	// Has unexported fields.
+}
+
+func New(n int) *Threads
+func (threads *Threads) Count() int
+func (threads *Threads) Minus() int
+func (threads *Threads) Plus() int
+func (threads *Threads) Wait()
