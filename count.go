@@ -25,57 +25,86 @@
 */
 package count
 
-import "sync/atomic"
+import "sync"
 
-const VERSION string = "1.0.0"
+const VERSION string = "2.0.0"
 
 type Threads struct {
-  plus chan bool
-  minus chan int
-  count int32
+  max int
+  count int
+  send bool
+  channel chan bool
+  mutex *sync.Mutex
 }
+
 
 func New(n int) *Threads {
   if n < 2 { panic("Does not make sense for threads to be less than 2.") }
-  var count int32 = 1
-  n = n-1 // The thread count starts at 1.
-  plus := make(chan bool, n)
-  minus := make(chan int, n)
-  return &Threads{plus, minus, count}
-}
-
-func (threads *Threads) flush() {
-  var b bool = true
-  for b {
-    select {
-    case <-threads.minus:
-      // repeat
-    default:
-      b = false
-    }
-  }
+  max, count, send, channel, mutex := n, 1, false, make(chan bool, 1), &sync.Mutex{}
+  return &Threads{max, count, send, channel, mutex}
 }
 
 func (threads *Threads) Plus() int {
-  threads.flush()
-  threads.plus <- true
-  n := int(atomic.AddInt32(&threads.count, 1))
-  if n < 2 { panic("Count must have been at least one.") }
-  return n
+  threads.mutex.Lock()
+  count := threads.count
+  // Although count can't be higher than max via the API,
+  // include the possibility:
+  if count >= threads.max {
+    threads.send = true
+    threads.mutex.Unlock()
+    <-threads.channel
+    // count remains the same.
+    return count
+  }
+  count += 1
+  threads.count = count
+  threads.mutex.Unlock()
+  return count
 }
 
 func (threads *Threads) Minus() int {
-  n := int(atomic.AddInt32(&threads.count, -1))
-  if n < 1 { panic("Count must be at least one.") }
-  <-threads.plus
-  threads.minus <- n
-  return n
+  threads.mutex.Lock()
+  count := threads.count
+  if threads.send {
+    // A Plus (or Wait) call is waiting to proceed...
+    threads.send = false // ...and this Minus handles it!
+    // Allow the receiver to decide if count needs to decrement.
+    threads.channel <- true
+  } else {
+    count -= 1
+    threads.count = count
+  }
+  threads.mutex.Unlock()
+  return count
+}
+
+func (threads *Threads) wait() {
+  for {
+    <-threads.channel
+    threads.mutex.Lock()
+    threads.count -= 1
+    if threads.count < 2 { break }
+    threads.send = true
+    threads.mutex.Unlock()
+  }
+  threads.mutex.Unlock()
 }
 
 func (threads *Threads) Wait() {
-  var n int
-  for {
-    n = <-threads.minus
-    if n == 1 { break }
+  threads.mutex.Lock()
+  count := threads.count
+  if count > 1 {
+    threads.send = true
+    threads.mutex.Unlock()
+    threads.wait()
+    return
   }
+  threads.mutex.Unlock()
+}
+
+func (threads *Threads) Count() int {
+  threads.mutex.Lock()
+  count := threads.count
+  threads.mutex.Unlock()
+  return count
 }

@@ -3,7 +3,6 @@ package count
 import "fmt"
 import "time"
 import "testing"
-import "sync/atomic"
 
 func do_nothing_for_a_second(threads *Threads) {
   time.Sleep(time.Second)
@@ -34,6 +33,5 @@ func TestCount(test *testing.T) {
   go do_nothing_for_a_second(threads)
 
   threads.Wait()
-  n = int(atomic.LoadInt32(&threads.count))
-  if n != 1 { bad("Should just have 1 thread.") }
+  if threads.Count() != 1 { bad("Should just have 1 thread.") }
 }
